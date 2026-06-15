@@ -23,7 +23,7 @@ image_platform = config.get("imagePlatform") or "linux/amd64"
 image_tag = config.get("imageTag") or f"v1-{image_platform.replace('/','-')}"
 
 # AWS region (needed for CloudWatch logging configuration)
-region = aws.get_region().name
+region = aws.get_region().region
 
 
 # ----------------------------
@@ -245,7 +245,7 @@ class WebApp(pulumi.ComponentResource):
             image.image_name,
             log_group.name,
             region
-        ).apply(lambda args: json.dumps({
+        ).apply(lambda args: json.dumps([{
             "name": service_name,
             "image": args[0],
 
@@ -272,7 +272,7 @@ class WebApp(pulumi.ComponentResource):
                     "awslogs-stream-prefix": "ecs"
                 }
             }
-        }))
+        }]))
 
         # https://www.pulumi.com/registry/packages/aws/api-docs/ecs/taskdefinition/#container_definitions
 
