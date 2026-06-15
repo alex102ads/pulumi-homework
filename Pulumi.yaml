@@ -1,0 +1,3 @@
+name: pulumi-homework
+runtime: python
+description: Pulumi AWS ECS Fargate web app example
