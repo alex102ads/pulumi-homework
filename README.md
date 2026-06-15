@@ -51,12 +51,15 @@ pip install -r requirements.txt
 4. Ensure Docker Desktop is running.
 
 5. Login to Pulumi (local or cloud):
+# https://www.pulumi.com/docs/reference/cli/pulumi_login/
+
 ```bash
 pulumi login
 ```
-(see Pulumi login docs: https://www.pulumi.com/docs/reference/cli/pulumi_login/)
 
 6. Create or select a stack:
+# https://www.pulumi.com/docs/intro/concepts/stack/
+
 ```bash
 pulumi stack init dev
 ```
@@ -64,9 +67,10 @@ pulumi stack init dev
 # or
 pulumi stack select --create dev
 ```
-(see Pulumi stacks docs: https://www.pulumi.com/docs/intro/concepts/stack/)
 
 7. Configure values:
+# https://www.pulumi.com/docs/iac/concepts/config/#configuring-stacks
+
 ```bash
 pulumi config set aws:region eu-west-1
 ```
@@ -87,6 +91,8 @@ pulumi config set docker:host unix:///Users/<your_user>/.colima/default/docker.s
 (see Pulumi config docs: https://www.pulumi.com/docs/intro/concepts/config/)
 
 8. Run preview and deploy:
+# https://www.pulumi.com/docs/reference/cli/pulumi_up/
+
 ```bash
 pulumi up
 ```
@@ -94,27 +100,29 @@ pulumi up
 # to auto-approve:
 pulumi up --yes
 ```
-(see pulumi up docs: https://www.pulumi.com/docs/reference/cli/pulumi_up/)
 
 9. Get the app URL:
+# https://www.pulumi.com/docs/reference/cli/stack_output/
+
 ```bash
 pulumi stack output url
 ```
 Visit the returned ALB DNS in a browser; the page will show the configured custom value.
-(see stack output docs: https://www.pulumi.com/docs/reference/cli/stack_output/)
 
 ## Cleanup
+# https://www.pulumi.com/docs/reference/cli/pulumi_destroy/
+
 To remove all created resources:
 ```bash
 pulumi destroy --yes
 ```
-(see pulumi destroy docs: https://www.pulumi.com/docs/reference/cli/pulumi_destroy/)
+# https://www.pulumi.com/docs/reference/cli/stack_rm/
 
 To remove the stack:
 ```bash
 pulumi stack rm dev
 ```
-(see stack rm docs: https://www.pulumi.com/docs/reference/cli/stack_rm/)
+(see stack rm docs: )
 
 ## Notes & troubleshooting
 - Docker must be able to push to ECR; the Pulumi program gets ECR credentials automatically.

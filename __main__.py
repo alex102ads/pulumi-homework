@@ -7,7 +7,7 @@ import pulumi_docker as docker
 # ----------------------------
 # CONFIGURATION (Pulumi inputs)
 # ----------------------------
-
+# https://www.pulumi.com/docs/intro/concepts/config/#configuring-stacks
 config = pulumi.Config()
 
 # Value shown in the web app (via env var)
@@ -48,12 +48,16 @@ class WebApp(pulumi.ComponentResource):
         # 1. ECR Repository
         # ----------------------------
         # Stores Docker images in AWS
+        # https://www.pulumi.com/registry/packages/aws/api-docs/ecr/repository/
+
         self.repo = aws.ecr.Repository(
             f"{name}-repo",
             opts=ResourceOptions(parent=self)
         )
 
         # Get credentials to push Docker image to ECR
+        # https://www.pulumi.com/registry/packages/aws/api-docs/ecr/getauthorizationtoken/
+
         auth = aws.ecr.get_authorization_token_output(
             registry_id=self.repo.registry_id
         )
@@ -72,6 +76,8 @@ class WebApp(pulumi.ComponentResource):
         # 2. Build & Push Docker Image
         # ----------------------------
         # Pulumi builds local Docker image and pushes to ECR
+        # https://www.pulumi.com/registry/packages/docker/api-docs/image/
+
         image = docker.Image(
             f"{name}-image",
             build=docker.DockerBuildArgs(
@@ -91,9 +97,13 @@ class WebApp(pulumi.ComponentResource):
         # 3. Networking (VPC)
         # ----------------------------
         # Uses default VPC instead of creating new network
+        # https://www.pulumi.com/registry/packages/aws/api-docs/ec2/getvpc/
+
         default_vpc = aws.ec2.get_vpc(default=True)
 
         # Get all subnets in default VPC (needed for ALB + ECS)
+        # https://www.pulumi.com/registry/packages/aws/api-docs/ec2/getsubnets/
+
         subnet_ids = aws.ec2.get_subnets(
             filters=[
                 aws.ec2.GetSubnetsFilterArgs(
@@ -107,6 +117,8 @@ class WebApp(pulumi.ComponentResource):
         # 4. Security Group
         # ----------------------------
         # Allows HTTP traffic from internet to ALB
+        # https://www.pulumi.com/registry/packages/aws/api-docs/ec2/securitygroup/
+
         self.sg = aws.ec2.SecurityGroup(
             f"{name}-sg",
             description="allow http",
@@ -136,6 +148,8 @@ class WebApp(pulumi.ComponentResource):
         # ----------------------------
         # 5. Application Load Balancer
         # ----------------------------
+        # https://www.pulumi.com/registry/packages/aws/api-docs/lb/loadbalancer/
+
         alb = aws.lb.LoadBalancer(
             f"{name}-alb",
             security_groups=[self.sg.id],
@@ -144,6 +158,8 @@ class WebApp(pulumi.ComponentResource):
         )
 
         # Target group for ECS tasks
+        # https://www.pulumi.com/registry/packages/aws/api-docs/lb/targetgroup/
+
         tg = aws.lb.TargetGroup(
             f"{name}-tg",
             port=80,
@@ -154,6 +170,8 @@ class WebApp(pulumi.ComponentResource):
         )
 
         # Listener: forwards traffic from ALB -> ECS tasks
+        # https://www.pulumi.com/registry/packages/aws/api-docs/lb/listener/
+
         listener = aws.lb.Listener(
             f"{name}-listener",
             load_balancer_arn=alb.arn,
@@ -170,6 +188,8 @@ class WebApp(pulumi.ComponentResource):
         # ----------------------------
         # 6. ECS Cluster
         # ----------------------------
+        # https://www.pulumi.com/registry/packages/aws/api-docs/ecs/cluster/
+
         self.cluster = aws.ecs.Cluster(
             f"{name}-cluster",
             opts=ResourceOptions(parent=self)
@@ -179,6 +199,8 @@ class WebApp(pulumi.ComponentResource):
         # 7. IAM Role for ECS Task
         # ----------------------------
         # Allows ECS to pull image & write logs
+        # https://www.pulumi.com/registry/packages/aws/api-docs/iam/role/
+
         exec_role = aws.iam.Role(
             f"{name}-exec-role",
             assume_role_policy=json.dumps({
@@ -191,6 +213,7 @@ class WebApp(pulumi.ComponentResource):
             }),
             opts=ResourceOptions(parent=self),
         )
+        # https://www.pulumi.com/registry/packages/aws/api-docs/iam/rolepolicyattachment/
 
         aws.iam.RolePolicyAttachment(
             f"{name}-exec-policy-attach",
@@ -202,6 +225,8 @@ class WebApp(pulumi.ComponentResource):
         # ----------------------------
         # 8. CloudWatch Logs
         # ----------------------------
+        # https://www.pulumi.com/registry/packages/aws/api-docs/cloudwatch/loggroup/
+
         log_group = aws.cloudwatch.LogGroup(
             f"{name}-log",
             name=pulumi.Output.concat("/ecs/", name),
@@ -213,11 +238,14 @@ class WebApp(pulumi.ComponentResource):
         # 9. ECS Task Definition
         # ----------------------------
         # Defines container runtime configuration
+        # https://www.pulumi.com/registry/packages/aws/api-docs/ecs/taskdefinition/
+        # https://www.pulumi.com/docs/iac/concepts/inputs-outputs/all/
+
         container_def = pulumi.Output.all(
             image.image_name,
             log_group.name,
             region
-        ).apply(lambda args: json.dumps([{
+        ).apply(lambda args: json.dumps({
             "name": service_name,
             "image": args[0],
 
@@ -244,7 +272,9 @@ class WebApp(pulumi.ComponentResource):
                     "awslogs-stream-prefix": "ecs"
                 }
             }
-        }]))
+        }))
+
+        # https://www.pulumi.com/registry/packages/aws/api-docs/ecs/taskdefinition/#container_definitions
 
         task = aws.ecs.TaskDefinition(
             f"{name}-task",
@@ -261,6 +291,8 @@ class WebApp(pulumi.ComponentResource):
         # ----------------------------
         # 10. ECS Service
         # ----------------------------
+        # https://www.pulumi.com/registry/packages/aws/api-docs/ecs/service/
+
         self.svc = aws.ecs.Service(
             f"{name}-svc",
             cluster=self.cluster.arn,
@@ -291,7 +323,9 @@ class WebApp(pulumi.ComponentResource):
         # OUTPUTS
         # ----------------------------
         # ALB DNS name = public URL of application
+
         self.url = alb.dns_name
+        # https://www.pulumi.com/docs/iac/guides/building-extending/components/build-a-component/#registering-component-outputs
 
         self.register_outputs({
             "url": self.url
