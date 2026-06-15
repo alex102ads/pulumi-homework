@@ -55,7 +55,7 @@ class WebApp(pulumi.ComponentResource):
 
         # Get credentials to push Docker image to ECR
         auth = aws.ecr.get_authorization_token_output(
-            registry_id=repo.registry_id
+            registry_id=self.repo.registry_id
         )
 
         username = auth.user_name
@@ -63,7 +63,7 @@ class WebApp(pulumi.ComponentResource):
 
         # Full image name: repo_url:tag
         image_name = pulumi.Output.concat(
-            repo.repository_url,
+            self.repo.repository_url,
             ":",
             image_tag
         )
@@ -80,11 +80,11 @@ class WebApp(pulumi.ComponentResource):
             ),
             image_name=image_name,
             registry=docker.RegistryArgs(
-                server=repo.repository_url,
+                server=self.repo.repository_url,
                 username=username,
                 password=password,
             ),
-            opts=ResourceOptions(parent=repo),
+            opts=ResourceOptions(parent=self.repo),
         )
 
         # ----------------------------
@@ -138,7 +138,7 @@ class WebApp(pulumi.ComponentResource):
         # ----------------------------
         alb = aws.lb.LoadBalancer(
             f"{name}-alb",
-            security_groups=[sg.id],
+            security_groups=[self.sg.id],
             subnets=subnet_ids.ids,
             opts=ResourceOptions(parent=self),
         )
@@ -263,14 +263,14 @@ class WebApp(pulumi.ComponentResource):
         # ----------------------------
         self.svc = aws.ecs.Service(
             f"{name}-svc",
-            cluster=cluster.arn,
+            cluster=self.cluster.arn,
             desired_count=1,
             launch_type="FARGATE",
             task_definition=task.arn,
 
             network_configuration=aws.ecs.ServiceNetworkConfigurationArgs(
                 subnets=subnet_ids.ids,
-                security_groups=[sg.id],
+                security_groups=[self.sg.id],
                 assign_public_ip=True,
             ),
 

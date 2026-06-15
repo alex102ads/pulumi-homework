@@ -126,7 +126,11 @@ pulumi stack rm dev
 - Pulumi CLI reference (commands like pulumi up, pulumi destroy, stacks): https://www.pulumi.com/docs/reference/cli/
 - Pulumi config (storing stack configuration): https://www.pulumi.com/docs/intro/concepts/config/
 - Pulumi Python language docs: https://www.pulumi.com/docs/intro/languages/python/
-- ComponentResource (authoring reusable components): https://www.pulumi.com/docs/intro/concepts/resources/components/
+- ComponentResource: 
+https://www.pulumi.com/docs/intro/concepts/resources/components/
+
+https://www.pulumi.com/docs/iac/guides/building-extending/components/build-a-component/#defining-a-component-resource
+
 - pulumi-aws provider package (overview & available resources): https://www.pulumi.com/registry/packages/aws/
 - pulumi-docker provider package (Image resource used to build/push images): https://www.pulumi.com/registry/packages/docker/
 - pulumi-aws API docs (useful resource pages)
