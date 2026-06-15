@@ -52,6 +52,7 @@ class WebApp(pulumi.ComponentResource):
 
         self.repo = aws.ecr.Repository(
             f"{name}-repo",
+            force_delete=True,
             opts=ResourceOptions(parent=self)
         )
 
