@@ -1,6 +1,6 @@
 pipeline {
     agent any
-
+    stages {
     stage('Checkout') {
         steps {
             checkout scm
@@ -23,5 +23,6 @@ pipeline {
         steps {
             sh 'pulumi up --yes'
     }
+}
 }
 }
